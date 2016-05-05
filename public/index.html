@@ -1,0 +1,125 @@
+<!-- index.html -->
+<!doctype html>
+
+<!-- ASSIGN OUR ANGULAR MODULE -->
+<html ng-app="appClient">
+<head>
+    <!-- META -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Optimize mobile viewport -->
+
+    <title>Node/Angular Todo App</title>
+
+    <!-- SCROLLS -->
+    <link rel="stylesheet" href="//s3.amazonaws.com/bv-bootstrap/v3.2.0/dist/css/bvbootstrap.min.css"><!-- load bootstrap -->
+    <style>
+        html                    { overflow-y:scroll; }
+        body                    { padding-top:50px; }
+        #client-list            { margin-bottom:30px; }
+        #todo-list              { margin-bottom:30px; }
+    </style>
+
+    <!-- SPELLS -->
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script><!-- load jquery -->
+    <script src="//s3.amazonaws.com/bv-bootstrap/v3.2.0/dist/js/bvbootstrap.min.js"></script><!-- load BV Bootstrap JS -->
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.4/angular.min.js"></script><!-- load angular -->
+    <script src="js/controllers/clients.js"></script><!-- load clients controller -->
+    <script src="js/controllers/todos.js"></script><!-- load todos controller -->
+    <script src="js/services/todos.js"></script><!-- load our todo service -->
+    <script src="js/services/clients.js"></script><!-- load our client service -->
+    <script src="core.js"></script>
+
+    <script type="text/javascript">
+        
+    </script>
+
+</head>
+<!-- SET THE CONTROLLER AND GET ALL TODOS -->
+<body>
+    <div ng-controller="ClientCtrl">
+        <div class="container">
+
+            <!-- HEADER AND TODO COUNT -->
+            <div class="jumbotron text-center">
+                <h1>Accounts <span class="label label-info">{{ clients.length }}</span></h1>
+            </div>
+
+            <!-- Account List -->
+            <div id="client-list" class="row">
+
+                    <!-- Loop over the Clients in $scope.clients -->
+                    <div class="panel panel-primary col-md-3" ng-repeat="client in clients track by $id(client)">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">{{ client.databaseName }}</h3>
+                        </div>
+                        <div class="panel-body text-center">
+                            <form class="form-inline">
+                                <div class="form-group">
+                                    <input type="text" class="form-control input-sm text-center" placeholder="New Client Name" ng-model="formData.text">
+                                    <button type="submit" class="btn btn-default btn-sm" ng-click="updateClient(client._id)">Edit</button>
+                                </div>
+                            </form>
+                            <button type="submit" class="btn btn-primary btn-sm" ng-click="deleteClient(client._id)">Delete</button>
+                        </div>
+                    </div>
+            </div>
+
+            <!-- Form to create Clients -->
+            <div id="client-form" class="row">
+                <div class="col-sm-8 col-sm-offset-2 text-center">
+                    <form>
+                        <div class="form-group">
+
+                            <!-- Bind this value to formData.text in IN ANGULAR -->
+                            <input type="text" class="form-control input-lg text-center" placeholder="ClientName" ng-model="formData.text">
+                        </div>
+
+                        <!-- createClient() will create new Clients -->
+                        <button type="submit" class="btn btn-default btn-lg" ng-click="createClient()">Add</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+<!-- <div ng-controller="TodoCtrl">
+        <div class="container"> -->
+
+            <!-- HEADER AND TODO COUNT -->
+<!--             <div class="jumbotron text-center">
+                <h1>I'm a Todo-aholic <span class="label label-info">{{ todos.length }}</span></h1>
+            </div>
+ -->
+            <!-- TODO LIST -->
+            <!-- <div id="todo-list" class="row">
+                <div class="col-sm-4 col-sm-offset-4">
+ -->
+                    <!-- LOOP OVER THE TODOS IN $scope.todos -->
+<!--                     <div class="checkbox" ng-repeat="todo in todos">
+                        <label>
+                            <input type="checkbox" ng-click="deleteTodo(todo._id)"> {{ todo.text }}
+                        </label>
+                    </div>
+
+                </div>
+            </div>
+-->
+            <!-- FORM TO CREATE TODOS -->
+<!--             <div id="todo-form" class="row">
+                <div class="col-sm-8 col-sm-offset-2 text-center">
+                    <form>
+                        <div class="form-group">
+ -->
+                            <!-- BIND THIS VALUE TO formData.text IN ANGULAR -->
+<!--                             <input type="text" class="form-control input-lg text-center" placeholder="I want to buy a puppy that will love me forever" ng-model="formData.text">
+                        </div>
+ -->
+                        <!-- createToDo() WILL CREATE NEW TODOS -->
+<!--                         <button type="submit" class="btn btn-primary btn-lg" ng-click="createTodo()">Add</button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>     -->
+</body>
+</html>
