@@ -17,8 +17,12 @@ angular.module('clientService', [])
 			delete 		  : function(id) {
 				return $http.delete('/api/clients/' + id);
 			},
-			expandClient  : function(id) {
-				return $http.get('/api/clients/' + id);
+			expandClient  : function(id, clientData) {
+				console.log(clientData);
+				return $http.post('/api/accounts/' + id, clientData);
+			},
+			displayCodes  : function(clientData) {
+				return $http.post('/api/clients/' + clientData._id + '/displayCodes', clientData);
 			}
 		}
 	});

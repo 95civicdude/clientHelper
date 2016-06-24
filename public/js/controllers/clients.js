@@ -9,12 +9,12 @@ angular.module('appClientController', [])
         // use the service to get all the clients
 		Clients.get()
             .success(function(data) {
-                $scope.clients = data;
+                $scope.accounts = data;
 
 				$scope.showDiv('../../templates/accountPanel.html');
             });
 
-		// CREATE ACCOUNT===========================================================
+        // CREATE ACCOUNT===========================================================
         // when submitting the add form, send the text to the node API
         $scope.createAccount = function() {
 
@@ -23,19 +23,42 @@ angular.module('appClientController', [])
             // people can't just hold enter to keep adding the same client anymore
             if (!$.isEmptyObject($scope.formData)) {
 
-            	$scope.formData.callType = 'account';
+                $scope.formData.callType = 'account';
                 // call the create function from our service (returns a promise object)
                 Clients.createAccount($scope.formData)
 
                     // if successful creation, call our get function to get all the new clients
                     .success(function(data) {
-                        $scope.formData = {}; // clear the form so our user is ready to enter another
-                        $scope.clients = data; // assign our new list of clients
+                        $scope.formData = {};   // clear the form so our user is ready to enter another
+                        $scope.accounts = data; // assign our new list of clients
                     });
             }
         };
 
-		// CREATE ==================================================================
+		// CREATE ACCOUNT===========================================================
+        // when submitting the add form, send the text to the node API
+        $scope.createBrand = function() {
+
+            // validate the formData to make sure that something is there
+            // if form is empty, nothing will happen
+            // people can't just hold enter to keep adding the same client anymore
+            if (!$.isEmptyObject($scope.formData)) {
+
+            	$scope.formData.callType  = 'brand';
+                $scope.formData.parentId  = $scope.parentId; // This comes from '.success of the expandClient function'
+                //$scope.formData.accountId = $scope.client._id; 
+                // call the create function from our service (returns a promise object)
+                Clients.createAccount($scope.formData)
+
+                    // if successful creation, call our get function to get all the new clients
+                    .success(function(data) {
+                        $scope.formData = {};   // clear the form so our user is ready to enter another
+                        $scope.clients  = data; // assign our new list of clients
+                    });
+            }
+        };
+
+		// CREATE CLIENT============================================================
         // when submitting the add form, send the text to the node API
         $scope.createClient = function() {
 
@@ -85,25 +108,47 @@ angular.module('appClientController', [])
 
         // EXPAND CLIENT ===========================================================
         // shows all clients within the specified bundle
-        $scope.expandClient = function(id) {
+        $scope.expandClient = function(id, client, panelToShow, callType) {
 
-        	$scope.parentId = id;
-        	
-        	Clients.expandClient(id)
+            if ($.isEmptyObject(client)) {
+                client = {};
+            }
+            client.callType = callType;
+
+        	Clients.expandClient(id, client)
 
         		.success(function(data) {
-        			$scope.clients = data;
-        			$scope.showDiv('../../templates/clientPanel.html');
+        			$scope.parentId = id;
+
+                    if (callType === 'account') {
+                        console.log('account is the thing');
+                        $scope.brands = data;
+                    } else if (callType === 'brand') {
+                        $scope.clients = data;
+                    }
+        			$scope.showDiv(panelToShow);
         		});
         };
 
-        $scope.returnClient = function() {
+        // DISPLAY CODDE UPDATE ====================================================
+        // Looks at a client and adds display code information if it does not yet exist
+        $scope.displayCodes = function(client, parentId) {
+        	
+        	client.parentId = parentId;
+        	Clients.displayCodes(client)
+
+        		.success(function(data) {
+        			$scope.clients = data;
+        		});
+        };
+
+        $scope.returnClient = function(panelToShow) {
         	
         	Clients.get()
 
         		.success(function(data) {
         			$scope.clients = data;
-        			$scope.showDiv('../../templates/accountPanel.html');
+        			$scope.showDiv(panelToShow);
         		});
         };
 
@@ -111,9 +156,3 @@ angular.module('appClientController', [])
         	$scope.templateUrl = nameOfTemplate;
         }
     })
-    // .directive('chAccount', function() {
-    // 	return {
-    // 		restrict: 'E',
-    // 		templateUrl: '../../templates/accountPanel.html'
-    // 	};
-    // });

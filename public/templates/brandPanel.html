@@ -1,0 +1,40 @@
+<!-- Loop over the Clients in $scope.clients -->
+<div class="panel panel-primary col-md-6 col-md-offset-3" ng-repeat="brand in brands track by $id(brand)">
+    <div class="panel-heading col-md-12">
+        <div class="col-md-9">
+            <h3 class="panel-title">{{ brand.name }}</h3>
+        </div>
+        <div class="col-md-3">
+            <button type="button" class="btn btn-default btn-sm" ng-click="expandClient(brand._id, brand.clients, '../../templates/clientPanel.html', 'brand')">{{ brand.clients.length }}</button>   
+        </div>         
+    </div>
+    <div class="panel-body col-md-12">
+        <div class="row">
+            <div class="col-md-8"><strong>Client Success Director</strong></div>
+            <div class="col-md-4">{{ brand.csd }}</div>
+        </div>
+        <div class="row">
+            <div class="col-md-8"><strong>Sales Director</strong></div>
+            <div class="col-md-4">{{ brand.sd }}</div>
+        </div>
+        <div class="row">
+            <div ng-if="brand.clients[0].platform == 'prr'"><strong>Bundle Configuration <a ng-href="https://ig.bazaarvoice.com/xref/customers-trunk/{{brand.name}}/config/bundleConfiguration.xml" target="_blank" role="button" class="btn btn-primary btn-sm">></a></strong></div>
+            <button type="submit" class="btn btn-primary btn-sm" ng-click="deleteClient(brand._id)">Delete</button>
+        </div>
+    </div>
+</div>
+<!-- Form to create Clients -->
+<div id="client-form" class="row">
+    <div class="col-sm-8 col-sm-offset-2 text-center">
+        <form>
+            <div class="form-group">
+
+                <!-- Bind this value to formData.accountName in IN ANGULAR -->
+                <input type="text" class="form-control input-lg text-center" placeholder="ClientName" ng-model="formData.brandName">
+            </div>
+
+            <!-- createClient() will create new Clients -->
+            <button type="submit" class="btn btn-default btn-lg" ng-click="createBrand()">Add</button>
+        </form>
+    </div>
+</div>
