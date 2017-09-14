@@ -1,0 +1,21 @@
+<!-- Loop over the Accounts in $scope.dbDocuments -->
+<div class="col-xs-3 account-group" ng-repeat="dbDocument in dbDocuments | filter: { brandName: currentAccount } | unique: 'clientName' track by $index">
+	<a class="account-panel-link" href="#" ng-click="doStuff(dbDocument)">
+	    <div class="account account-panel-default account-panel-radius">
+	    	<div class="shape">
+	    		<div class="shape-text">
+	    			<span class="glyphicon glyphicon-share-alt"></span>
+	    		</div>
+	    	</div>
+	    	<div class="account-content">
+	    		<h3 class="">
+	    			{{ dbDocument.clientName }}
+	    		</h3>
+	    		<p>
+	    			Client Description
+	    		</p>
+	    		<button type="button" class="btn btn-link" ng-click="monitorDeployments(dbDocument.clientName)">?</button>
+	    	</div>
+	    </div>
+	</a>
+</div>

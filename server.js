@@ -11,6 +11,7 @@
     var methodOverride = require('method-override'); // simulate DELETE and PUT (express4)
     var database       = require('./config/database');
 
+
     // configuration =================
 
     mongoose.connect(database.url);             // connect to mongoDB database through our config/database file

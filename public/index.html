@@ -14,27 +14,69 @@
     <link rel="stylesheet" href="//s3.amazonaws.com/bv-bootstrap/v3.2.0/dist/css/bvbootstrap.min.css"><!-- load bootstrap -->
     <style>
         html                    { overflow-y:scroll; }
-        body                    { padding-top:50px; }
+        /*body                    { padding-top:50px; }*/
         #client-list            { margin-bottom:30px; }
+        .brandDetailsList       { margin-top:15px; }
+
+        /* TESTING STUFF */
+        .account                { background:#fff; border:1px solid #18404d; box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); margin: 15px 0; overflow:hidden; }
+        div .account-panel-link     { color:#000; text-decoration: none; }
+        .account-panel-default  { border-color: #215768; }
+        .account-panel-default .shape{
+          border-color: transparent #215768 transparent transparent;
+          border-color: rgba(255,255,255,0) #215768 rgba(255,255,255,0) rgba(255,255,255,0);
+        }
+        .account-panel-radius   { border-radius: 7px; }
+        .account-content        { padding:0 20px 10px; }
+        .shape                  { border-style: solid; border-width: 0 70px 40px 0; float:right; height: 0px; width: 0px;
+                                  -ms-transform:rotate(360deg); /* IE 9 */
+                                  -o-transform: rotate(360deg);  /* Opera 10.5 */
+                                  -webkit-transform:rotate(360deg); /* Safari and Chrome */
+                                  transform:rotate(360deg); }
+        .shape-text{
+                                  color:#fff; font-size:12px; font-weight:bold; position:relative; right:-40px; top:2px; white-space: nowrap;
+                                  -ms-transform:rotate(30deg); /* IE 9 */
+                                  -o-transform: rotate(360deg);  /* Opera 10.5 */
+                                  -webkit-transform:rotate(30deg); /* Safari and Chrome */
+                                  transform:rotate(30deg);
+                                }
+
     </style>
 
     <!-- SPELLS -->
+    <script src="pdfmake.min.js"></script> 
+    <script src="vfs_fonts.js"></script>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script><!-- load jquery -->
     <script src="//s3.amazonaws.com/bv-bootstrap/v3.2.0/dist/js/bvbootstrap.min.js"></script><!-- load BV Bootstrap JS -->
     <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.4/angular.min.js"></script><!-- load angular -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/angular-filter/0.5.8/angular-filter.min.js"></script>
+    <script src="core.js"></script>
     <script src="js/controllers/clients.js"></script><!-- load clients controller -->
     <script src="js/services/clients.js"></script><!-- load our client service -->
-    <script src="core.js"></script>
+    
 
 </head>
 <!-- SET THE CONTROLLER AND GET ALL TODOS -->
 <body>
+    <div class="navbar navbar-portal navbar-inverse">
+      <div class="container-fluid">
+          <div class="navbar-header">
+              <button type="button" class="btn btn-default navbar-btn"><span class="glyphicon glyphicon-align-justify"></span></button><a id="navportal" class="navbar-brand brand-bv" href="#"><span class="visuallyhidden">Bazaarvoice:</span></a>
+          </div>
+          <div class="collapse navbar-collapse">
+              <ul class="nav navbar-nav">
+                  <li class="active"><a href="#">Link</a></li>
+                  <li><a href="#">Link2</a></li>
+              </ul>
+          </div>
+      </div>
+    </div>
     <div ng-controller="ClientCtrl">
         <div class="container">
 
             <!-- HEADER AND TODO COUNT -->
             <div class="jumbotron text-center">
-                <h1>Accounts <span class="label label-default">{{ accounts.length }}</span></h1>
+                <h1>Accounts <span class="label label-default">{{ (dbDocuments | unique:'accountName').length }}</span></h1>
             </div>
 
             <!-- Account List -->

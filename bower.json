@@ -1,0 +1,24 @@
+{
+  "name": "ClientHelper",
+  "version": "0.0.0",
+  "homepage": "https://github.com/95civicdude/clientHelper",
+  "description": "App to help visualize clients better",
+  "main": "server.js",
+  "moduleType": [
+    "node"
+  ],
+  "authors": [
+    "Jeff Lamoureux"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "pdfmake": "~0.1.20"
+  }
+}

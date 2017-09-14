@@ -1,0 +1,44 @@
+<!-- Loop over the Accounts in $scope.dbDocuments -->
+<div class="col-xs-3 account-group" ng-repeat="dbDocument in dbDocuments | filter: { accountName: currentAccount } | unique: 'brandName' track by $index">
+	<a class="account-panel-link" href="#" ng-click="doStuff(dbDocument.brandName, 'clientsPanel', 'clients')">
+	    <div class="account account-panel-default account-panel-radius">
+	    	<div class="shape">
+	    		<div class="shape-text">
+	    			<span class="glyphicon glyphicon-share-alt"></span>
+	    		</div>
+	    	</div>
+	    	<div class="account-content">
+	    		<div class="row">
+	    			<div class="">
+			    		<h3 class="">
+			    			{{ dbDocument.brandName }}
+			    		</h3>
+		    		</div>
+		    	</div>
+		    	<div class="row">
+		    		<div class="">
+		    			<span class="badge" ng-repeat="client in dbDocuments | isBrandInAccount:dbDocument.brandName | unique: 'platform'">{{ client.platform }}</span>
+		    			<span class="badge" ng-repeat="client in dbDocuments | isBrandInAccount:dbDocument.brandName | unique: 'cluster'">{{ client.cluster }}</span>
+		    			<span class="badge">{{ dbDocuments | instancesInBrand:dbDocument.brandName }}</span>
+		    		</div>
+	    		</div>
+	    		<p>Brand Description</p>
+	    	</div>
+	    </div>
+	</a>
+</div>
+
+
+<!-- Form to add Brand to Account -->
+<div id="brand-form" class="row">
+    <div class="col-sm-8 col-sm-offset-2 text-center">
+        <form>
+            <div class="form-group">
+                <input type="text" class="form-control input-lg text-center" placeholder="New Brand Name" ng-model="formData.brandName">
+            </div>
+
+            <!-- createClient() will create new Clients -->
+            <button type="submit" id="addBrandButton" class="btn btn-default btn-lg" ng-click="createRecord(dbDocuments, 'brandsPanel')">Add</button>
+        </form>
+    </div>
+</div>

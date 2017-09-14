@@ -1,0 +1,51 @@
+<!-- Loop over the Accounts in $scope.dbDocuments -->
+<div class="col-xs-3 account-group" ng-repeat="dbDocument in dbDocuments | unique: 'accountName' track by $index">
+	<a class="account-panel-link" href="#" ng-click="doStuff(dbDocument.accountName, 'brandsPanel', 'brands')">
+	    <div class="account account-panel-default account-panel-radius">
+	    	<div class="shape">
+	    		<div class="shape-text">
+	    			<span class="glyphicon glyphicon-share-alt"></span>
+	    		</div>
+	    	</div>
+	    	<div class="account-content">
+	    		<h3 class="">
+	    			{{ dbDocument.accountName }}
+	    		</h3>
+    			<span class="label label-default" ng-repeat="client in dbDocuments | filterByAccount:dbDocument.accountName | unique: 'cluster'">{{ client.cluster }}</span>
+		    	<span class="badge">{{ dbDocuments | unique: 'brandName' | instancesInAccount:dbDocument.accountName }} Brands</span>
+		    	<span class="label label-primary">{{ dbDocuments | instancesInAccount:dbDocument.accountName }} Instances</span>
+	    		<p>
+	    			Account Description
+	    		</p>
+	    	</div>
+	    </div>
+	</a>
+	<a ng-click="doStuff(dbDocument.accountName, 'auditPanel', 'audit')">this is the one</a>
+	<a ng-click="openAuditPage(dbDocument.accountName, 'auditFormPanel')">open Audit Form</a>
+</div>
+
+<!-- Form to create Clients -->
+<div id="client-form" class="row">
+    <div class="col-sm-8 col-sm-offset-2 text-center">
+        <form>
+            <div class="form-group">
+
+                <!-- Bind this value to formData.accountName in IN ANGULAR -->
+                <input type="text" class="form-control input-lg text-center" placeholder="Account Name" ng-model="formData.accountName">
+                <input type="text" class="form-control input-lg text-center" placeholder="Account Director" ng-model="formData.accountDirector">
+                <input type="text" class="form-control input-lg text-center" placeholder="Brand Name" ng-model="formData.brandName">
+            </div>
+
+            <!-- createClient() will create new Clients -->
+            <button type="submit" id="addAccountButton" class="btn btn-default btn-lg" ng-click="createRecord({}, 'testingPanel')">Add</button>
+        </form>
+    </div>
+</div>
+
+<script type="text/javascript">
+    // JS to keep the techTeamMember list expanded upon adding a tech team member
+    // TODO: THIS STILL NOT WORKING TO KEEP THE LIST GROUP EXPANDED
+    // $('.account-panel-link').on('click', function(e) {
+    // 	$('.account-group').addClass("hide");
+    // });
+</script>

@@ -1,10 +1,31 @@
 // load the client model
 var Client = require('./models/client');
-
+var Audit = require('./models/audit');
 var async = require('async');
+
+// Need this for the server side call to Catalog API
+var productHealth = require("./controllers/productHealth");
+
+
+// This is stuff for Querying the BV Databases
+// load the ElasticSearch for BV Database lookups
+var elasticsearch = require('elasticsearch');
+var dbClient = elasticsearch.Client({
+    host: 'cstools-polloi-bazaar-409108554.us-east-1.elb.amazonaws.com:80'
+})
 
 // expose the routes to our app with module.exports
 module.exports = function(app) {
+
+    dbClient.ping({
+        requestTimeout: 30000
+    }, function(error) {
+        if (error) {
+            console.error('elasticsearch cluster is down!');
+        } else {
+            console.log('All is well with elasticsearch');
+        }   
+    });
 
     // api for CLIENTS ---------------------------------------------------------------------
 
@@ -12,24 +33,69 @@ module.exports = function(app) {
     var addAccount = function(req, res, next) {
         
         Client.count({
-            'name' : req.body.accountName
+            'brandName' : req.body.brandName
         }, function(err, count) {
             if (req.body.callType === 'client') {
                 // Account already exists, let's go create an individual client instead
                 next();
+            } else if (req.body.callType === 'record' ) {
+                // Create the entry in the database for this Client
+
+                var childClients = {};
+                var recordJSON = [];
+
+                // look up the client by bundle in rosetta
+                performRequest('rosetta.prod.us-east-1.nexus.bazaarvoice.com', '/search/1/client', 'GET', '?bundle=' + req.body.brandName, function(result){
+                    
+                    childClients = Object(result);
+
+                    // build list of child client names to keep track
+                    Object.keys(childClients).forEach(function(bigKey) {
+
+                        recordJSON[bigKey] = {                     // Create our JSON document to represent the DB call later
+                            'clientName'         : childClients[bigKey].name,
+                            'cluster'            : childClients[bigKey].cluster,
+                            'platform'           : childClients[bigKey].platform,
+                            'ui_version'         : childClients[bigKey].ui_version,
+                            'mainDisplayCode'    : "",
+                            'expanded'           : false,
+                            'brandName'          : req.body.brandName,
+                            'businessContacts'   : [ ],
+                            'technicalContacts'  : [ ],
+                            'accountName'        : req.body.accountName,
+                            'accountPlans'       : [ ],
+                            'accountDirector'    : req.body.accountDirector,
+                            'csd'                : "",
+                            'sd'                 : "",
+                            'tsm'                : ""
+                        };
+                    })
+
+                    Client.create(recordJSON, function(err, account) {      // Using the JSON doc we can create our DB document in one call
+                        
+                        if (err)
+                            console.log('there was an error creating the Account: ' + err);
+
+                        Client.find(function(err, records) {
+                            if (err)
+                                res.send(err);
+                            res.json(records);
+                        });
+                    });
+                });
             } else if (req.body.callType === 'account') {
                 // Create the Portfolio entry
 
-                var portfolioJSON = {
-                    'name'            : req.body.accountName,
+                var accountJSON = {
+                    'name'            : req.body.name,
                     'accountDirector' : req.body.accountDirector,
                     'csd'             : req.body.clientSuccessDirector,
                     'sd'              : req.body.salesDirector,
-                    'brands'        : [],
+                    'brands'          : [],
                     'accountPlans'    : []
                 };
 
-                Client.create(portfolioJSON, function(err, account) {
+                Client.create(accountJSON, function(err, account) {
                     // Use the JSON doc to create the database entry for this
                     // portfolio entry.
 
@@ -43,7 +109,6 @@ module.exports = function(app) {
                         res.json(accounts);
                     });
                 });
-
             } else if (count > 0) {
                 // Account already exists, and someone clicked the "Create Account" button
                 throw new Error('Oh no, you\'ve already created this brand');
@@ -58,13 +123,12 @@ module.exports = function(app) {
                 };
 
                 // look up the client by bundle in rosetta
-                performRequest('/search/1/client', 'GET', '?bundle=' + req.body.brandName, function(result){
+                performRequest('rosetta.prod.us-east-1.nexus.bazaarvoice.com', '/search/1/client', 'GET', '?bundle=' + req.body.name, function(result){
                     
                     childClients = Object(result);
                     
-                    brandJSON.name = req.body.brandName;
+                    brandJSON.name = req.body.name;
 
-                    console.log(req.body);
 
                     // build list of child client names to keep track
                     Object.keys(childClients).forEach(function(bigKey) {
@@ -84,24 +148,24 @@ module.exports = function(app) {
                     }, {
                         'safe'  : true,
                         'upsert': true
-                    }, function(err, client) {      // Using the JSON doc we can create our DB document in one call
+                    }, function(err, account) {      // Using the JSON doc we can create our DB document in one call
                         
                         if (err)
                             console.log('there was an error creating the brand: ' + err);
 
                         Client.findById( {
-                            '_id' : client._id
-                        }, function(err, client) {
+                            '_id' : account._id
+                        }, function(err, account) {
                             if (err)
                                 res.send(err)
-                            res.json(client.clients);
+
+                            res.json(account.brands);
                         });
                     });
                 });
-
             } else {
                 // Account already exists, and someone clicked the "Create Account" button
-                throw new Error('Foolish one, something messed up in the routes.js add function');
+                throw new Error('Foolish one, something messed up in the routes.js addAccount function');
             }
         });
     }
@@ -111,16 +175,17 @@ module.exports = function(app) {
 
         // look up in Rosetta a specific client to add to my DB record for the account
         // format for the call: https://rosetta.prod.us-east-1.nexus.bazaarvoice.com/search/1/client/jomaloneaustralia
-        performRequest('/search/1/client', 'GET', '/' + req.body.text, function(result){
+        performRequest('rosetta.prod.us-east-1.nexus.bazaarvoice.com', '/search/1/display', 'GET', '?client=' + req.body.text, function(result){
 
             theClient = Object(result[0]);
 
             clientJSON = {                             
-                'name'        : theClient.name, 
-                'cluster'     : theClient.cluster, 
-                'platform'    : theClient.platform, 
-                'ui_version'  : theClient.ui_version,
-                'expanded'    : true
+                'name'               : theClient.client, 
+                'cluster'            : theClient.cluster, 
+                'platform'           : theClient.platform, 
+                'ui_version'         : theClient.ui_version,
+                'mainDisplayCode'    : theClient.code,
+                'expanded'           : true
             };
 
             Client.findOneAndUpdate({
@@ -145,79 +210,79 @@ module.exports = function(app) {
     }
 
     // expand a client to see all individual clients for this "bundle"
-    var expandClient = function(req, res) {
+    var expand = function(req, res) {
 
-        var client = req.body;
-        console.log(req);
-        //console.log(client);
+        console.log(req.body)
 
-        if (client.callType === 'account') {
-            Client.findById(req.params.client_id, function(err, account) {
-                if (err)
-                    res.send(err);
+        // look up in Rosetta a specific client to add to my DB record for the account
+        // format for the call: https://rosetta.prod.us-east-1.nexus.bazaarvoice.com/search/1/client/jomaloneaustralia
+        // performRequest('rosetta.prod.us-east-1.nexus.bazaarvoice.com', '/search/1/display', 'GET', '?client=' + req.body.text, function(result){
 
-                res.json(account.brands);
+        //     theClient = Object(result[0]);
 
-                //clients = client.clients;
-                // Object.keys(clients).forEach(function (bigKey) {
+        //     clientJSON = {                             
+        //         'name'               : theClient.client, 
+        //         'cluster'            : theClient.cluster, 
+        //         'platform'           : theClient.platform, 
+        //         'ui_version'         : theClient.ui_version,
+        //         'mainDisplayCode'    : theClient.code,
+        //         'expanded'           : true
+        //     };
 
-                //     if (clients[bigKey].expanded == false) {
+        //     Client.findOneAndUpdate({
+        //         'name' : theClient.bundle
+        //     }, {'$push': { 'clients': clientJSON }        // hard-coded to set the 'bundle' field in the DB
+        //     }, {
+        //         'safe'  : true, 
+        //         'upsert': true 
+        //     }, function(err, client) {
+        //         if (err)
+        //             res.send(err);
 
-                //         clients[bigKey].expanded = true;
-                //     }
+        //         Client.findById( {
+        //             '_id' : client._id
+        //         }, function(err, client) {
+        //             if (err)
+        //                 res.send(err)
+        //             res.json(client.clients);
+        //         });
+        //     });
+        // });
 
-                //     client.clients[bigKey] = clients[bigKey];
-                // });
+        // var client = req.body;
 
-                // client.save();
+        // if (client.callType === 'account') {
+        //     Client.findById(req.params.client_id, function(err, account) {
+        //         if (err)
+        //             res.send(err);
 
-                // get and return all the clients after you create another
-                // Client.findById(req.params.client_id, function(err, clients) {
-                //     if (err)
-                //         res.send(err);
-                //     res.json(clients.clients);
-                // });
-            });
-        } else if (client.callType === 'brand') {
-            Client.findById(req.params.client_id, function(err, client) {
-                if (err)
-                    res.send(err);
+        //         res.json(account.brands);
+        //     });
+        // } else if (client.callType === 'brand') {
 
-                res.json(client.clients);
+        //     Client.findOne({
+        //             'brands.name': client.data.name
+        //     }, function(err, brand) {
+        //         if (err)
+        //             res.send(err);
 
-                //clients = client.clients;
-                // Object.keys(clients).forEach(function (bigKey) {
-
-                //     if (clients[bigKey].expanded == false) {
-
-                //         clients[bigKey].expanded = true;
-                //     }
-
-                //     client.clients[bigKey] = clients[bigKey];
-                // });
-
-                // client.save();
-
-                // get and return all the clients after you create another
-                // Client.findById(req.params.client_id, function(err, clients) {
-                //     if (err)
-                //         res.send(err);
-                //     res.json(clients.clients);
-                // });
-            });
-        }
+        //         var theActualBrand = brand.brands.id(client.data._id); // needed to get the specific brand from the DB using the it's id
+        //         res.json(theActualBrand.clients);
+        //     });
+        // }
     }
 
     // search for all display codes for all clients in an account
     var findClientDisplayCodes = function(req, res) {
 
         client = req.body;
+        console.log(client);
         parentId = req.body.parentId;
         displayCodesJSON = [];
 
         if (client.expanded == false) {
 
-            performRequest('/search/1/display', 'GET', '?client=' + client.name, function(result){
+            performRequest('rosetta.prod.us-east-1.nexus.bazaarvoice.com', '/search/1/display', 'GET', '?client=' + client.name, function(result){
 
                 displayCodes = Object(result);
 
@@ -229,37 +294,178 @@ module.exports = function(app) {
 
                 // The tough part of finding and updating the right one based on the parent ID AND the child ID
                 Client.findOneAndUpdate({
-                    'clients': {
-                        '$elemMatch': { 'name': client.name }    
+                    'brands' : {
+                        '$elemMatch': {
+                            '_id': client.parentId,
+                            'clients': {
+                                '$elemMatch': { 
+                                    'name': client.name 
+                                }    
+                            }
+                        }
                     }
                 }, {'$push': {
-                        'clients.$.displayCodes' : {$each: displayCodesJSON}
+                        'clients.$.displayCodes': {$each: displayCodesJSON}
                     },
                     '$set' : {
-                        'clients.$.expanded'     : true
+                        'clients.$.expanded' : true
                     }
                 }, {
                     'safe'  : true, 
                     'upsert': true 
-                }, function(err, client) {
+                }, function(err, brand) {
                     if (err)
                         res.send(err);
+
+                    //console.log(client);
                     
-                    Client.findById(parentId, function(err, client) {
+                    Client.find({
+                        'brands' : {
+                            '$elemMatch': {
+                                '_id': client.parentId  
+                            }
+                        }
+                        
+                    }, function(err, brand) {
                         if (err)
                             res.send(err);
-                        res.json(client.clients);
+
+                        console.log(brand);
+                        res.json(brand.clients);
                     });
                 });
             })
         }
     }
 
+    // update a client with new data
+    var updateRecord = function(req, res) {
+
+        if (req.body.clientData.callType === 'accountTeamMember') {
+
+            var teamMemberType = req.body.clientData.teamMemberType;
+            var newTeamMember = req.body.clientData.newTeamMember;
+
+            var updateJSON = {};
+            updateJSON[teamMemberType] = newTeamMember;
+
+            Client.update({
+                'accountName': req.body.dbDocument.accountName
+            }, {
+                '$set': updateJSON
+            }, {
+                multi: true
+            }, function(err, dbDocument) {
+                if (err)
+                    res.send(err);
+
+                // get and return all clients after updating it
+                Client.find(function(err, dbDocuments) {
+                    if (err)
+                        res.send(err)
+                    res.json(dbDocuments);
+                });
+            });
+        } else if (req.body.clientData.callType === 'techTeamMember') {
+
+            var teamMemberType = req.body.clientData.typeOfTechContact;
+            var newTeamMember = req.body.clientData.nameOfTechContact;
+
+            var updateJSON = {};
+            updateJSON = {
+                'typeOfTechContact' : teamMemberType,
+                'nameOfTechContact' : newTeamMember
+            };
+
+            Client.update({
+                'brandName': req.body.dbDocument.brandName
+            }, {
+                '$push': {
+                    'technicalContacts' : updateJSON
+                }
+            }, {
+                upsert: true,
+                multi: true,
+                new: true
+            }, function(err, dbDocument) {
+                if (err)
+                    res.send(err);
+
+                // get and return all clients after updating it
+                Client.find(function(err, dbDocuments) {
+                    if (err)
+                        res.send(err)
+                    res.json(dbDocuments);
+                });
+            });
+        } else if (req.body.clientData.callType === 'addClientHomePage') {
+            // Make a call to rosetta to search for 
+        }
+    }
+
+    var createTechPlan = function(req, res) {
+
+        var edrYesOrNo = false;
+
+        if (req.body.clientData.edrYes) {
+            edrYesOrNo = true;
+        } else if (req.body.clientData.edrNo) {
+            edrYesOrNo = false;
+        }
+
+        var updateJSON = {
+            'dateCreated'         : (new Date).toLocaleDateString(),
+            'numOfInstances'      : req.body.clientData.numOfInstances,
+            'numOfLocales'        : req.body.clientData.numOfLocales,
+            'platformUsed'        : req.body.clientData.platformUsed,
+            'hostedOrAPI'         : req.body.clientData.hostedOrAPI,
+            'edr'                 : edrYesOrNo,
+            'bvPixel'             : false,
+            'bvAnalytics'         : '',
+            'productsUsed'        : req.body.clientData.productsUsed,
+            'currentTechState1'   : req.body.clientData.currentTechState1,
+            'currentTechState2'   : req.body.clientData.currentTechState2,
+            'currentTechState3'   : req.body.clientData.currentTechState3,
+            'currentTechState4'   : req.body.clientData.currentTechState4,
+            'lookingForward1'     : req.body.clientData.lookingForward1,
+            'lookingForward2'     : req.body.clientData.lookingForward2,
+            'lookingForward3'     : req.body.clientData.lookingForward3,
+            'lookingForward4'     : req.body.clientData.lookingForward4,
+            'lookingForward5'     : req.body.clientData.lookingForward5,
+            'engagementOverview1' : req.body.clientData.engagementOverview1,
+            'engagementOverview2' : req.body.clientData.engagementOverview2,
+            'engagementOverview3' : req.body.clientData.engagementOverview3,
+            'engagementOverview4' : req.body.clientData.engagementOverview4            
+        };
+
+        Client.update({
+            'accountName': req.body.dbDocument.accountName
+        }, {
+            '$push': {
+                'accountPlans' : updateJSON
+            }
+        }, {
+            upsert: true,
+            multi: true,
+            new: true
+        }, function(err, dbDocument) {
+            if (err)
+                res.send('you messed up: ' + err);
+
+                // get and return all clients after updating it
+                Client.find(function(err, dbDocuments) {
+                    if (err)
+                        res.send(err)
+                    res.json(dbDocuments);
+                });
+        });
+    }
+
     // makes an api call to rosetta to get client bundle information based on the client name
-    function performRequest(endpoint, method, data, success) {
+    function performRequest(theHost, endpoint, method, data, success) {
 
         var https      = require('https');
-        var host       = 'rosetta.prod.us-east-1.nexus.bazaarvoice.com';
+        var host       = theHost;
         var headers    = {}; 
         var dataString = JSON.stringify(data);
         
@@ -302,22 +508,92 @@ module.exports = function(app) {
         req.end();
     }
 
+
+    // ------------------------------- ELASTICSEARCHSTUFF -------------------------------
+    // get the count of all active products in the DB for given client.
+    // uses ElasticSearch and Client Delivery Palloi cluster
+    app.get('/api/search/:clientName', function(req, res) {
+
+        var str = req.params.clientName;
+
+        dbClient.count({
+            index: '!catalog:' + str.toLowerCase() + ':',
+            body: {
+                query: {
+                    constant_score: {
+                        filter: {
+                            bool: {
+                                must: [
+                                    {'term' : {'type' : 'product'}},
+                                    {'term' : {'active' : 'true'}}
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        }).then(function (response) {
+            
+            res.json(response);
+        }, function (error) {
+            console.trace(error.message)
+        });
+
+    });
+
+
+    // ------------------------------- END ELASTICSEARCH STUFF -------------------------------
+
     // get all clients
     app.get('/api/clients', function(req, res) {
+
         // use mongoose to get all clients in the DB
-        Client.find(function(err, clients) {
+        Client.find(function(err, accounts) {
 
             // if there is an error retrieving, send the error. nothing after res.send(err) will execute
             if (err)
                 res.send(err)
 
-            res.json(clients); // return all clients in JSON format
+            res.json(accounts); // return all clients in JSON format
+        });
+    });
+    // get list of brand clients in account
+    // NOTE: as of 2/16/17 this works with new style of UI (tiled approach).
+    app.get('/api/clients/:accountName', function(req, res) {
+
+        // use mongoose to get all brands with matching accountName
+        if (req.query.callType === 'brands' || req.query.callType === 'audit') {
+            Client.find({
+                'accountName' : req.params.accountName
+            }, function(err, client) {
+                if (err)
+                    res.send(err);
+                
+                res.json(client);
+            });    
+        } else if (req.query.callType === 'clients') {
+            Client.find({
+                'brandName' : req.params.accountName
+            }, function(err, client) {
+                if (err)
+                    res.send(err);
+                
+                res.json(client);
+            });
+        }        
+    });
+    // monitor client deployments
+    app.post('/api/clientMonitor', function(req, res) {
+        console.log('here');
+
+        performRequest('config.bazaarvoice.com', '/api/v1/client', 'GET', '?name=' + 'smashbox-global', function(result){
+            //console.log(result);
         });
     });
     // Creation Posts for both the account and clients
     app.post('/api/clients', [addAccount, addClient]);
     // 'Expanding' a client when they first click on the details button
-    app.post('/api/accounts/:client_id', [expandClient]);
+    app.post('/api/clients/:client_id', [expand]);
     // Updating the client record with a list of all the display codes
     app.post('/api/clients/:client_id/displayCodes', [findClientDisplayCodes]);
     // update a client and send back all clients after creation
@@ -338,23 +614,47 @@ module.exports = function(app) {
         //     });
         // });
     });
+    // create a tech plan for the client
+    app.post('/api/techPlan', [createTechPlan]);
+    // update a client record
+    app.put('/api/clients/:client_id', [updateRecord]);
     // delete a client
     app.delete('/api/clients/:client_id', function(req, res) {
+
         Client.remove({
-            _id : req.params.client_id
-        }, function(err, client) {
+            accountName : req.query.accountName
+        }, function(err, dbDocument) {
             if (err)
                 res.send(err);
 
-            // get and return all the clients after you create another
-            Client.find(function(err, clients) {
+            // get and return all the Accounts after you delete one
+            Client.find(function(err, dbDocuments) {
                 if (err)
                     res.send(err)
-                res.json(clients);
+                res.json(dbDocuments);
             });
         });
     });
 
+    // Using this to ping the Catalog API for Product Feed health
+    app.route('/api/products')
+        .get(productHealth.getProductResults);
+
+
+
+    // get all audits
+    app.get('/api/audits', function(req, res) {
+
+        // use mongoose to get all audits in the DB
+        Audit.find(function(err, audits) {
+
+            // if there is an error retrieving, send the error. nothing after res.send(err) will execute
+            if (err)
+                res.send(err)
+
+            res.json(audits); // return all audit documents in JSON format
+        });
+    });
     // Ideas for API routes
     // ================================================
     //app.get('/api/v1/accounts.json?id=:client_id')

@@ -1,0 +1,159 @@
+<!-- Form to save Plan -->
+<div id="client-form" class="row">
+    <div class="col-sm-8 col-sm-offset-2 text-left">
+        <form>
+            <div>
+                <h4>Current Date: {{ getDatetime() }}</h4>
+            </div>
+            <div><h2>Current Technical State <small>General overview of the client</small></h2></div>
+            <div class="form-group">
+                <label for="numOfInstances">Number of BV Instances | </label>
+                <span class="form-control-static" id="numOfInstances">{{ techPlanData.numOfInstances }}</span>
+            </div>
+            <div class="form-group">
+                <label for="numOfLocales">Number of Locales</label>
+                <span class="form-control-static" id="numOfLocales" ng-model="formData.numOfLocales">Still TODO</span>
+            </div>
+            <div class="form-group">
+                <label for="platformUsed">PRR or Conversations?</label>
+                <select class="form-control" id="platformUsed" ng-model="formData.platformUsed">
+                    <option>PRR</option>
+                    <option>Conversations</option>
+                    <option>Both</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="hostedOrAPI">Hosted or API?</label>
+                <select class="form-control" id="hostedOrAPI" ng-model="formData.hostedOrAPI">
+                    <option>Hosted</option>
+                    <option>API</option>
+                    <option>Both</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="edr">EDR?</label>
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="optionsRadios" id="edrYes" value="yes" ng-model="formData.edrYes" checked>
+                        Yes
+                    </label>
+                </div>
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="optionsRadios" id="edrNo" value="no" ng-model="formData.edrNo" checked>
+                        No
+                    </label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="bvPixel">BV Pixel</label>
+                <span class="form-control-static" id="bvPixel" ng-model="formData.bvPixel">Still TODO</span>
+            </div>
+            <div class="form-group">
+                <label for="bvAnalytics">BV Analytics</label>
+                <span class="form-control-static" id="bvAnalytics" ng-model="formData.bvAnalytics">Still TODO</span>
+            </div>
+            <div class="form-group">
+                <label for="productsUsed">BV Products being used</label>
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" value="RR" ng-model="formData.productsUsed.RR">
+                        Ratings &amp; Reviews
+                    </label>
+                </div>
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" value="AA" ng-model="formData.productsUsed.AA">
+                        Ask &amp; Answer
+                    </label>
+                </div>
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" value="CURE" ng-model="formData.productsUsed.CURE">
+                        Curations
+                    </label>
+                </div>
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" value="SPOT" ng-model="formData.productsUsed.SPOT">
+                        Spotlights
+                    </label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="currentTechState1">Are there deficiencies in their current implementation that need to be addressed?</label>
+                <textarea class="form-control" id="currentTechState1" ng-model="formData.currentTechState1"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="currentTechState2">Describe the state of the client's product catalog(s)</label>
+                <textarea class="form-control" id="currentTechState2" ng-model="formData.currentTechState2"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="currentTechState3">Are there outstanding technical issues that require immediate attention (e.g. open support items, broken implementations, escalations, etc.)?</label>
+                <textarea class="form-control" id="currentTechState3" ng-model="formData.currentTechState3"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="currentTechState4">Describe the technical resources we are working with on the client side. (e.g. centralized or fragmented, internal or agencies, level of competence and responsiveness)</label>
+                <textarea class="form-control" id="currentTechState4" ng-model="formData.currentTechState4"></textarea>
+            </div>
+
+
+            <hr>
+
+
+            <div><h2>Looking Forward <small>Technical program plans with this client</small></h2></div>
+            <div class="form-group">
+                <label for="lookingForward1">What is the plan to address outstanding technical issues or to address existing deficiencies in implementations?</label>
+                <textarea class="form-control" id="lookingForward1" ng-model="formData.lookingForward1"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="lookingForward2">What technical initiatives does the client have in the next 6-12 months that will impact BV or require BV support?</label>
+                <textarea class="form-control" id="lookingForward2" ng-model="formData.lookingForward2"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="lookingForward3">Describe the roadblocks you see to this client implementing our solutions effectively. Are there ways to mitigate?</label>
+                <textarea class="form-control" id="lookingForward3" ng-model="formData.lookingForward3"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="lookingForward4">Does an Account Plan exist for this client? If so, how do the technical initiatives help to support that plan?</label>
+                <textarea class="form-control" id="lookingForward4" ng-model="formData.lookingForward4"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="lookingForward5">Describe timelines and next steps for this client</label>
+                <textarea class="form-control" id="lookingForward5" ng-model="formData.lookingForward5"></textarea>
+            </div>
+
+
+            <hr>
+
+
+            <div><h2>TAM Engagement Overview <small>Describe how you plan to engage with this client</small></h2></div>
+            <div class="form-group">
+                <label for="engagementOverview1">Meeting Schedule</label>
+                <input class="form-control" id="engagementOverview1" ng-model="formData.engagementOverview1"/>
+            </div>
+            <div class="form-group">
+                <label for="engagementOverview2">Planned On Sites</label>
+                <input class="form-control" id="engagementOverview2" ng-model="formData.engagementOverview2"/>
+            </div>
+            <div class="form-group">
+                <label for="engagementOverview3">Describe your level of engagement with this client and how you see your role in supporting their technical initiatives going forward (e.g. Are you taking a more reactive role or a consultative one with this client? What specific parts of the plan do you own?)</label>
+                <textarea class="form-control" id="engagementOverview3" ng-model="formData.engagementOverview3"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="engagementOverview4">What will you need from the rest of the account team to make this plan successful?</label>
+                <textarea class="form-control" id="engagementOverview4" ng-model="formData.engagementOverview4"></textarea>
+            </div>
+
+
+            <div class="form-group">
+                <label for="exampleInputFile">File input</label>
+                <input type="file" id="exampleInputFile">
+                <p class="help-block">Example block-level help text here.</p>
+            </div>
+            <!-- createClient() will create new Clients -->
+            <button type="submit" id="saveAccountPlanButton" class="btn btn-default btn-lg" ng-click="saveTechPlan(dbDocument)">Save</button>
+            <button type="cancel" class="btn btn-default btn-lg" ng-click="cancelTechPlan()">Cancel</button>
+        </form>
+    </div>
+</div>

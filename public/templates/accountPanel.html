@@ -5,7 +5,7 @@
             <h3 class="panel-title">{{ account.name }}</h3>
         </div>
         <div class="col-md-3">
-            <button type="button" class="btn btn-default btn-sm" ng-click="expandClient(account._id, account.brands, '../../templates/brandPanel.html', 'account')">{{ account.brands.length }}</button>   
+            <button type="button" class="btn btn-default btn-sm" ng-click="expand(account._id, account, '../../templates/brandPanel.html', 'account')">{{ account.brands.length }}</button>   
         </div>         
     </div>
     <div class="panel-body col-md-12">
@@ -33,7 +33,7 @@
             <div class="form-group">
 
                 <!-- Bind this value to formData.accountName in IN ANGULAR -->
-                <input type="text" class="form-control input-lg text-center" placeholder="ClientName" ng-model="formData.accountName">
+                <input type="text" class="form-control input-lg text-center" placeholder="ClientName" ng-model="formData.name">
                 <input type="text" class="form-control input-lg text-center" placeholder="Account Director" ng-model="formData.accountDirector">
                 <input type="text" class="form-control input-lg text-center" placeholder="Client Success Director" ng-model="formData.clientSuccessDirector">
                 <input type="text" class="form-control input-lg text-center" placeholder="Sales Director" ng-model="formData.salesDirector">
