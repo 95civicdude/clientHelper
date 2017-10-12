@@ -20,8 +20,6 @@
 	    	</div>
 	    </div>
 	</a>
-	<a ng-click="doStuff(dbDocument.accountName, 'auditPanel', 'audit')">this is the one</a>
-	<a ng-click="openAuditPage(dbDocument.accountName, 'auditFormPanel')">open Audit Form</a>
 </div>
 
 <!-- Form to create Clients -->
@@ -37,7 +35,7 @@
             </div>
 
             <!-- createClient() will create new Clients -->
-            <button type="submit" id="addAccountButton" class="btn btn-default btn-lg" ng-click="createRecord({}, 'testingPanel')">Add</button>
+            <button type="submit" id="addAccountButton" class="btn btn-default btn-lg" ng-click="createRecord('testingPanel', {})">Add</button>
         </form>
     </div>
 </div>

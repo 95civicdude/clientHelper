@@ -26,9 +26,6 @@ angular.module('clientService', [])
 					params: { }
 				});
 			},
-			getClientMonitor : function(clientName)	{
-				return $http.post('/api/clientMonitor', {clientName});
-			},
 			create 		  	 : function(data) {
 				return $http.post('/api/clients', data);
 			},
@@ -37,9 +34,6 @@ angular.module('clientService', [])
 			},
 			createClient   	 : function(clientData) {
 				return $http.post('/api/clients', clientData);
-			},
-			createTechPlan	 : function(dbDocument, clientData) {
-				return $http.post('/api/techPlan', { dbDocument, clientData });
 			},
 			update 		  	 : function(dbDocument, clientData) {
 				return $http.put('/api/clients/' + dbDocument._id, { dbDocument, clientData });
@@ -50,22 +44,8 @@ angular.module('clientService', [])
 			delete  	  	 : function(dbDocument) {
 				return $http.delete('/api/clients/' + dbDocument._id, { params: dbDocument });
 			},
-			oldDelete 		 : function(id) {
-				return $http.delete('/api/clients/' + id);
-			},
-			expand  		 : function(id, clientData) {
-				return $http.post('/api/clients/' + id, clientData);
-			},
 			displayCodes  	 : function(clientData) {
 				return $http.post('/api/clients/' + clientData._id + '/displayCodes', clientData);
 			}
 		}
 	})
-
-	.factory('Audits', function($http) {
-		return {
-			get 		  	 : function() {
-				return $http.get('/api/audits');
-			}
-		}
-	});
