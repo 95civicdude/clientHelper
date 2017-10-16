@@ -26,10 +26,10 @@
 <div id="client-form" class="row">
     <div class="col-sm-8 col-sm-offset-2 text-center">
         <form>
-            <div class="form-group">
+            <div class="form-group bloodhound">
 
                 <!-- Bind this value to formData.accountName in IN ANGULAR -->
-                <input type="text" class="form-control input-lg text-center" placeholder="Account Name" ng-model="formData.accountName">
+                <input type="text" class="form-control input-lg text-center typeahead" placeholder="Account Name" ng-model="formData.accountName">
                 <input type="text" class="form-control input-lg text-center" placeholder="Account Director" ng-model="formData.accountDirector">
                 <input type="text" class="form-control input-lg text-center" placeholder="Brand Name" ng-model="formData.brandName">
             </div>
@@ -39,11 +39,3 @@
         </form>
     </div>
 </div>
-
-<script type="text/javascript">
-    // JS to keep the techTeamMember list expanded upon adding a tech team member
-    // TODO: THIS STILL NOT WORKING TO KEEP THE LIST GROUP EXPANDED
-    // $('.account-panel-link').on('click', function(e) {
-    // 	$('.account-group').addClass("hide");
-    // });
-</script>

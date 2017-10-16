@@ -5,6 +5,9 @@ angular.module('clientService', [])
 			get 		  	 : function() {
 				return $http.get('/api/clients');
 			},
+			getClientList	 : function() {
+				return $http.get('/api/clientList');
+			},
 			getBrands		 : function(accountName, callType) {
 				return $http({
 					url   : '/api/clients/' + accountName,
@@ -47,5 +50,5 @@ angular.module('clientService', [])
 			displayCodes  	 : function(clientData) {
 				return $http.post('/api/clients/' + clientData._id + '/displayCodes', clientData);
 			}
-		}
-	})
+		};
+	});

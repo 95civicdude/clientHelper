@@ -15,7 +15,7 @@
     <style>
         html                    { overflow-y:scroll; }
         /*body                    { padding-top:50px; }*/
-        #client-list            { margin-bottom:30px; }
+        #account-list            { margin-bottom:30px; }
         .brandDetailsList       { margin-top:15px; }
 
         /* TESTING STUFF */
@@ -33,13 +33,14 @@
                                   -o-transform: rotate(360deg);  /* Opera 10.5 */
                                   -webkit-transform:rotate(360deg); /* Safari and Chrome */
                                   transform:rotate(360deg); }
-        .shape-text{
+        .shape-text             {
                                   color:#fff; font-size:12px; font-weight:bold; position:relative; right:-40px; top:2px; white-space: nowrap;
                                   -ms-transform:rotate(30deg); /* IE 9 */
                                   -o-transform: rotate(360deg);  /* Opera 10.5 */
                                   -webkit-transform:rotate(30deg); /* Safari and Chrome */
                                   transform:rotate(30deg);
                                 }
+        .twitter-typeahead      { width: 100%; }
 
     </style>
 
@@ -53,6 +54,7 @@
     <script src="core.js"></script>
     <script src="js/controllers/clients.js"></script><!-- load clients controller -->
     <script src="js/services/clients.js"></script><!-- load our client service -->
+    <script src="js/typeahead.js"></script><!--typeahead js file -->
     
 
 </head>
@@ -71,8 +73,8 @@
           </div>
       </div>
     </div>
-    <div ng-controller="ClientCtrl">
-        <div class="container">
+    <div ng-controller="ClientCtrl" id="ClientCtrl">
+        <div client-List-Div class="container">
 
             <!-- HEADER AND TODO COUNT -->
             <div class="jumbotron text-center">
@@ -80,7 +82,7 @@
             </div>
 
             <!-- Account List -->
-            <div id="client-list" class="row">
+            <div id="account-list" class="row">
                 <div ng-include="templateUrl"></div>
             </div>
         </div>

@@ -1,8 +1,15 @@
 angular.module('appClientController', [])
 
 	// inject the Client service factory into our controller
-	.controller('ClientCtrl', function($scope, $http, $filter, $window, Clients) {
+	.controller('ClientCtrl', function($scope, $http, $filter, $window, $timeout, Clients) {
 		$scope.formData = {};
+
+        Clients.getClientList()
+            .then(function(data) {
+                $scope.clientList = data;
+
+                $scope.$broadcast('dataloaded');
+            });
 
 		// GET =====================================================================
         // when landing on the page, get all clients and show them
@@ -34,8 +41,6 @@ angular.module('appClientController', [])
                         });
                 } else {
                     $scope.formData.accountName = accountName;
-                    //$scope.formData.accountDirector = accountDirector;
-                    console.log(accountName);
                     $scope.currentAccount = accountName;
 
                     // call the create function from our service (returns a promise object)
@@ -86,14 +91,12 @@ angular.module('appClientController', [])
 
             Clients.getBrands(accountName, callType)
             .then(function(data) {
-                console.log(data);
                 $scope.dbDocuments = data.data;
                 if (callType == "brands") {
                     $scope.currentAccount = data.data[0].accountName;
                 } else if (callType == "clients") {
                     $scope.currentAccount = data.data[0].brandName;
                 }
-
                 $scope.showDiv('../../templates/' + pageToLoad + '.html');
             })
         };
@@ -197,3 +200,57 @@ angular.module('appClientController', [])
             return count;
         }
     })
+
+    .directive('clientListDiv', ['$timeout', function($timeout) {
+        return {
+            link: function($scope, element, attrs) {
+                $scope.$on('dataloaded', function() {
+                    $timeout(function() {
+
+                        var substringMatcher = function(strs) {
+                            return function findMatches(q, cb) {
+                              var matches, substringRegex;
+                          
+                              // an array that will be populated with substring matches
+                              matches = [];
+                          
+                              // regex used to determine if a string contains the substring `q`
+                              substrRegex = new RegExp(q, 'i');
+                          
+                              // iterate through the pool of strings and for any string that
+                              // contains the substring `q`, add it to the `matches` array
+                              $.each(strs, function(i, str) {
+                                if (substrRegex.test(str)) {
+                                  matches.push( {value: str});
+                                }
+                              });
+
+                              cb(matches);
+                            };
+                          };
+
+                        var clients = $('#ClientCtrl').scope().clientList.data;
+                    
+                        clientListForTypeAhead = [];
+                        s = {};
+
+                        $.each(clients, function(i, client) {
+                            s[client.name] = client;
+                            clientListForTypeAhead.push(client.name);
+                        });
+                          
+                        $('.bloodhound .typeahead').typeahead({
+                            hint: true,
+                            highlight: true,
+                            minLength: 1
+                          },
+                          {
+                            name: 'clients',
+                            displayKey: 'value',
+                            source: substringMatcher(clientListForTypeAhead)
+                          });
+                    });
+                    }, 0, false);
+                }
+            }
+    }]);   

@@ -1,4 +1,16 @@
 <!-- Loop over the Accounts in $scope.dbDocuments -->
+<div class="account account-panel-default account-panel-radius ">
+	<div class="shape">
+		<div class="shape-text">
+			<span class="glyphicon glyphicon-share-alt"></span>
+		</div>
+	</div>
+	<div class="account-content">
+		<h2>
+			{{currentAccount}}
+		</h2>
+	</div>
+</div>
 <div class="col-xs-3 account-group" ng-repeat="dbDocument in dbDocuments | filter: { brandName: currentAccount } | unique: 'clientName' track by $index">
 	<a class="account-panel-link" href="#" ng-click="doStuff(dbDocument)">
 	    <div class="account account-panel-default account-panel-radius">
@@ -16,7 +28,21 @@
 	    		</p>
 				<button type="button" class="btn btn-link" ng-click="monitorDeployments(dbDocument.clientName)">?</button>
 				<a role="button" class="btn btn-default active" href="https://sb2-bazaar.prod.us-east-1.nexus.bazaarvoice.com/app#/client/{{dbDocument.clientName}}">Syndication</a>
-	    	</div>
-	    </div>
+				
+			</div>
+		</div>
 	</a>
+</div>
+<!-- Form to add Client to Brand -->
+<div id="client-form" class="row">
+    <div class="col-sm-8 col-sm-offset-2 text-center">
+        <form>
+            <div class="form-group bloodhound">
+                <input type="text" class="form-control input-lg text-center typeahead" placeholder="New Client Name" ng-model="formData.clientName">
+            </div>
+
+            <!-- createClient() will create new Clients -->
+            <button type="submit" id="addBrandButton" class="btn btn-default btn-lg" ng-click="createRecord('clientsPanel', currentAccount)">Add</button>
+        </form>
+    </div>
 </div>

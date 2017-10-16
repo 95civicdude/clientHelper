@@ -11,6 +11,8 @@ var databaseSchema = new Schema({
 	'brandName'			 : String,
 	'accountName'		 : String,
 	'accountDirector'    : String
+}, {
+	collection: "clients"
 });
 
 module.exports = mongoose.model('Client', databaseSchema);

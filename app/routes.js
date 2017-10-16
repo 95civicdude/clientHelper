@@ -1,5 +1,6 @@
 // load the client model
 var Client = require('./models/client');
+var ClientList = require('./models/clientlist');
 var async = require('async');
 
 
@@ -354,10 +355,23 @@ module.exports = function(app) {
 
             // if there is an error retrieving, send the error. nothing after res.send(err) will execute
             if (err)
-                res.send(err)
+                res.send(err);
 
             res.json(accounts); // return all clients in JSON format
         });
+    });
+
+    // get list of all clients for typeahead suggestion engine
+    app.get('/api/clientList', function(req, res) {
+        ClientList.find(function(err, clients) {
+                
+                // if there's an error, capture it and output it
+                if (err)
+                    res.send(err);
+    
+                // return all clients in JSON format, for the typeahead suggestion engine
+                res.json(clients);
+            });
     });
     // get list of brand clients in account
     // NOTE: as of 2/16/17 this works with new style of UI (tiled approach).
